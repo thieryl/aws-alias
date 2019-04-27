@@ -16,6 +16,15 @@ create-assume-role =
         }";
   }; f
 
+running-instance = ec2 describe-instances \
+    --filter Name=instance-state-name,Values=running \
+    --output table \
+    --query 'Reservations[].Instances[].{
+        Name: Tags[?Key==`Name`].Value | [0],
+        PRI_IP: PrivateIpAddress,
+        PUB_IP: PublicIpAddress,
+        Type: InstanceType,
+        Platform: Platform || `Linux`}'
 
 running-instances = ec2 describe-instances \
     --filter Name=instance-state-name,Values=running \
@@ -68,7 +77,7 @@ authorize-my-ip =
 
 get-group-id =
   !f() {
-    aws ec2 describe-security-groups --profile $1 --filters Name=group-name,Values=${1} --query SecurityGroups[0].GroupId --output text
+    aws ec2 describe-security-groups --filters Name=group-name,Values=${1} --query SecurityGroups[0].GroupId --output text
   }; f
 
 authorize-my-ip-by-name =
@@ -76,13 +85,6 @@ authorize-my-ip-by-name =
     group_id=$(aws get-group-id "${1}")
     aws authorize-my-ip "$group_id"
   }; f
-
-get-my-ip-by-name =
-  !f() {
-    group_id=$(aws get-group-id "${1}")
-    aws authorize-my-ip "$group_id"
-  }; f
-
 
 # list all security group port ranges open to 0.0.0.0/0
 public-ports = ec2 describe-security-groups \
@@ -130,13 +132,13 @@ myip =
 allow-my-ip =
   !f() {
     my_ip=$(aws myip)
-    aws ec2 authorize-security-group-ingress --group-name ${1} --protocol ${2} --port ${3} --cidr $my_ip/32 --profile ${4}
+    aws ec2 authorize-security-group-ingress --group-name ${1} --protocol ${2} --port ${3} --cidr $my_ip/32
   }; f
 
 revoke-my-ip =
   !f() {
     my_ip=$(aws myip)
-    aws ec2 revoke-security-group-ingress --group-name ${1} --protocol ${2} --port ${3} --cidr $my_ip/32 --profile ${4}
+    aws ec2 revoke-security-group-ingress --group-name ${1} --protocol ${2} --port ${3} --cidr $my_ip/32
   }; f
 
 allow-my-ip-all =
@@ -154,21 +156,3 @@ open-security-groups = ec2 describe-security-groups \
     --filters "Name=ip-permission.to-port,Values=22"  \
     --query 'SecurityGroups[?length(IpPermissions[?ToPort==`22` && contains(IpRanges[].CidrIp, `0.0.0.0/0`)]) > `0`].{GroupName: GroupName, TagName: Tags[?Key==`Name`].Value | [0]}' \
     --output table
-
-show-regions = ec2 describe-regions --query "Regions[].RegionName"
-
-allow-ip-by-desc =
-  !if() {
-     aws ec2 update-security-group-rule-descriptions-ingress \
-     --group-id $1 \
-     --ip-permissions '[{
-         "IpProtocol": "tcp",
-         "FromPort": 22,
-         "ToPort": 22,
-         "IpRanges": [{
-             "CidrIp": "$2/32",
-             "Description": "$3"
-             }]
-        }]'
-
-  };
