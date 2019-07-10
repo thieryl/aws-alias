@@ -16,6 +16,15 @@ create-assume-role =
         }";
   }; f
 
+running-instance = ec2 describe-instances \
+    --filter Name=instance-state-name,Values=running \
+    --output table \
+    --query 'Reservations[].Instances[].{
+        Name: Tags[?Key==`Name`].Value | [0],
+        PRI_IP: PrivateIpAddress,
+        PUB_IP: PublicIpAddress,
+        Type: InstanceType,
+        Platform: Platform || `Linux`}'
 
 running-instances = ec2 describe-instances \
     --filter Name=instance-state-name,Values=running \
