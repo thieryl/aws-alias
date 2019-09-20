@@ -22,8 +22,7 @@ Note that running the commands below **will** delete any existing alias
 file you may have had:
 
 ```
-$ git clone https://github.com/awslabs/awscli-aliases.git
-$ mkdir -p ~/.aws/cli
+$ git clone https://github.com/thieryl/awscli-alias.git ~/.aws/cli
 $ cp awscli-aliases/alias ~/.aws/cli/alias
 ```
 
@@ -45,9 +44,9 @@ command:
 ## Dependencies
 
 ### tostring alias
-The tostring alias requires to have the jp command installed.  
+The tostring alias requires to have the jp command installed.
 For installing the command line interface for JMESPath (jp), please see the README.md at https://github.com/jmespath/jp
 
 ### tostring-with-jq alias
-The tostring-with-jq alias requires to have the jq command installed.  
+The tostring-with-jq alias requires to have the jq command installed.
 For installing the Command-line JSON processor (jq), please see this page: https://stedolan.github.io/jq/download/
