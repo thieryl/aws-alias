@@ -23,7 +23,6 @@ file you may have had:
 
 ```
 $ git clone https://github.com/thieryl/awscli-alias.git ~/.aws/cli
-$ cp awscli-aliases/alias ~/.aws/cli/alias
 ```
 
 To test that the aliases now work, run the following alias:
